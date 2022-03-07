@@ -28,6 +28,6 @@ Upon termination, it will send `f"Cat Detector Terminated {timestamp}"`.
 Note: Press `Q` while being on the camera active window to quit the program.
 
 ### Things for improvement:
-- Cat face detection algorithm: to detect the entire cat body instead of frontal face
+- Cat face detection algorithm: to detect the entire cat body instead of frontal face (swap to CNN)
 - Add user controls from Telegram client
 - Deploy application
