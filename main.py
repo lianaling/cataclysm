@@ -5,29 +5,31 @@ from bot import bot
 from datetime import datetime
 from threading import Thread
 import os
+from dotenv import load_dotenv
 
-url = 'http://192.168.1.24:8080/video'
-xml = 'C:/Users/liana/Documents/Projects/cat-detector/haarcascade_frontalcatface.xml'
+# Load env var
+load_dotenv()
+CAM_URL = os.getenv('CAM_URL')
+CHAT_ID = int(os.getenv('CHAT_ID'))
+
+# Global var between threads
+xml = './haarcascade_frontalcatface.xml'
 filename = 'image.jpg'
 dt = datetime.today()
-chat_id = 1088156959
-
 q_th = []
 
-def detect_cat(url: str, xml: str):
-
+def detect_cat():
     # IP Cam
-
-    cap = cv2.VideoCapture(url)
+    cap = cv2.VideoCapture(CAM_URL)
 
     # Get image classifier
     catFaceCasacde = cv2.CascadeClassifier(xml)
 
     # Send start message
-    bot.send_message(text=f'Cat Detector Started {dt}', chat_id=chat_id)
+    bot.send_message(text=f'Cat Detector Started {dt}', chat_id=CHAT_ID)
 
     while True:
-        cam, frame = cap.read()
+        _, frame = cap.read()
         if frame is not None:
             frame = imutils.resize(frame, width=680)
 
@@ -44,30 +46,32 @@ def detect_cat(url: str, xml: str):
                 for (x, y, w, h) in faces:
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0))
 
+                # Push to queue
                 if len(q_th) == 0:
                     q_th.append(frame)
 
             cv2.imshow('Frame', frame)
 
+        # Exit
         q = cv2.waitKey(1)
         if q == ord('q'):
             os._exit(1)
 
     cv2.destroyAllWindows()
 
-    bot.send_message(text=f'Cat Detector Terminated {dt}', chat_id=1088156959)
+    bot.send_message(text=f'Cat Detector Terminated {dt}', chat_id=CHAT_ID)
 
-def write_cat():
+def send_alert():
     while True:
         if len(q_th) != 0:
             cv2.imwrite(filename, q_th[0])
-            bot.send_message(text=f'CAT ALERT {dt}', chat_id=chat_id)
-            bot.send_photo(photo=open(filename, 'rb'), chat_id=chat_id)
+            bot.send_message(text=f'CAT ALERT {dt}', chat_id=CHAT_ID)
+            bot.send_photo(photo=open(filename, 'rb'), chat_id=CHAT_ID)
             q_th.clear()
 
 if __name__ == "__main__":
-    read_th = Thread(target=detect_cat, args=(url, xml))
-    write_th = Thread(target=write_cat, args=())
+    read_th = Thread(target=detect_cat)
+    write_th = Thread(target=send_alert)
 
     # Start
     read_th.start()
