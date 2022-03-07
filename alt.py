@@ -1,19 +1,24 @@
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 import imutils
 from bot import bot
+from cnn import IMG_SIZE, model
 from datetime import datetime
 from threading import Thread
 import os
 from dotenv import load_dotenv
+import tensorflow as tf
 
 # Load env var
 load_dotenv()
 CAM_URL = os.getenv('CAM_URL')
 CHAT_ID = int(os.getenv('CHAT_ID'))
 
+# Constant
+IMG_SIZE = 50
+
 # Global var between threads
-xml = './haarcascade_frontalcatface.xml'
 filename = 'image.jpg'
 dt = datetime.today()
 q_th = []
@@ -22,25 +27,29 @@ def detect_cat():
     # IP Cam
     cap = cv2.VideoCapture(CAM_URL)
 
-    # Get image classifier
-    catFaceCascade = cv2.CascadeClassifier(xml)
-
     # Send start message
     bot.send_message(text=f'Cat Detector Started {dt}', chat_id=CHAT_ID)
 
     while True:
         _, frame = cap.read()
         if frame is not None:
-            frame = imutils.resize(frame, width=680)
+            # bot.send_message(text=f'Frame resolution {frame.shape}', chat_id=CHAT_ID)
+            data = np.array(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY))
+            gray_frame = tf.reshape(data, (1,50,50,1))
+            frame = cv2.resize(gray_frame, (IMG_SIZE, IMG_SIZE), interpolation = cv2.INTER_AREA)
 
-            faces = catFaceCascade.detectMultiScale(frame)
+            # data = frame.reshape(IMG_SIZE, IMG_SIZE, 1)
+            faces = model.predict([frame])[0]
 
-            # Number of lines of the matrix corresponds to number of faces detected
-            if len(faces) == 0:
+            fig = plt.figure(figsize=(6, 6))
+            ax = fig.add_subplot(111)
+            ax.imshow(frame, cmap="gray")
+
+            if faces[1] > faces[0]:
                 print("No cat faces found")
 
             else:
-                print(f"Number of cat faces detected: {faces.shape[0]}")
+                print(f"Probability of cat face: {faces[0]}")
 
                 # Draw faces
                 for (x, y, w, h) in faces:
