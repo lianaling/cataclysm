@@ -26,7 +26,7 @@ def detect_cat():
     catFaceCascade = cv2.CascadeClassifier(xml)
 
     # Send start message
-    bot.send_message(text=f'Cat Detector Started {dt}', chat_id=CHAT_ID)
+    bot.send_message(text=f'Cataclysm Started {dt}', chat_id=CHAT_ID)
 
     while True:
         _, frame = cap.read()
@@ -55,7 +55,7 @@ def detect_cat():
         # Exit
         q = cv2.waitKey(1)
         if q == ord('q'):
-            bot.send_message(text=f'Cat Detector Terminated {dt}', chat_id=CHAT_ID)
+            bot.send_message(text=f'Cataclysm Terminated {dt}', chat_id=CHAT_ID)
             cv2.destroyAllWindows()
             os._exit(1)
 
