@@ -1,6 +1,6 @@
 ## Project Cataclysm
 
-To detect cats using cat face detection with haar cascades classifier and alert user through Telegram.
+To detect cats using cat face detection with haar cascade classifier and alert user through Telegram.
 
 <br/>
 
